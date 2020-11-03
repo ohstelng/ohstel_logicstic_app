@@ -1,4 +1,5 @@
 import 'package:extended_image/extended_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ohstel_logicstic_app/food/paid_food_model.dart';
 import 'package:paginate_firestore/paginate_firestore.dart';
@@ -7,7 +8,14 @@ import 'fast_food_details_model.dart';
 import 'food_methods.dart';
 
 class FoodOrderPage extends StatelessWidget {
-  final List uniList = ['unilorin', 'unilag', 'lasu', 'al-hikmat'];
+  final List uniList = [
+    'unilorin',
+    'unilag',
+    'lasu',
+    'al-hikmat',
+    'kwasu',
+    'kwaraploy'
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -15,18 +23,29 @@ class FoodOrderPage extends StatelessWidget {
       body: ListView.builder(
         itemCount: uniList.length,
         itemBuilder: (context, index) {
-          return FlatButton(
-            color: Colors.green,
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => SelectFoodPage(
-                    uniName: uniList[index],
+          return Container(
+            margin: EdgeInsets.symmetric(horizontal: 50, vertical: 10),
+            height: 60,
+            child: FlatButton(
+              color: Colors.green,
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => SelectFoodPage(
+                      uniName: uniList[index],
+                    ),
+                  ),
+                );
+              },
+              child: Center(
+                child: Text(
+                  '${uniList[index]}',
+                  style: TextStyle(
+                    color: Colors.white,
                   ),
                 ),
-              );
-            },
-            child: Text('${uniList[index]}'),
+              ),
+            ),
           );
         },
       ),
@@ -96,6 +115,14 @@ class SelectedOrderPage extends StatefulWidget {
 
 class _SelectedOrderPageState extends State<SelectedOrderPage> {
   bool loading = false;
+  TextStyle _style = TextStyle(
+    fontSize: 17,
+    fontWeight: FontWeight.w300,
+  );
+  TextStyle subTitleStyle = TextStyle(
+    fontSize: 16,
+    fontWeight: FontWeight.w300,
+  );
 
   Future<void> refresh({bool pop = true}) async {
     int count = 0;
@@ -115,10 +142,11 @@ class _SelectedOrderPageState extends State<SelectedOrderPage> {
     });
   }
 
-  Future<void> updateOrderDetails(
-      {@required PaidFood order,
-      @required int index,
-      @required int type}) async {
+  Future<void> updateOrderDetails({
+    @required PaidFood order,
+    @required int index,
+    @required int type,
+  }) async {
     List<Map> _updatedOrdersList = [];
 
     for (var i = 0; i < order.orders.length; i++) {
@@ -156,8 +184,11 @@ class _SelectedOrderPageState extends State<SelectedOrderPage> {
     });
   }
 
-  void setShippingInfo(
-      {@required PaidFood order, @required int index, @required int type}) {
+  void setShippingInfo({
+    @required PaidFood order,
+    @required int index,
+    @required int type,
+  }) {
     showDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -260,13 +291,26 @@ class _SelectedOrderPageState extends State<SelectedOrderPage> {
                     .orderBy('timestamp', descending: true),
                 itemBuilder: (_, context, snap) {
                   PaidFood paidOrder = PaidFood.fromMap(snap.data());
+                  String date =
+                      paidOrder.timestamp.toDate().toString().split(' ')[0];
+                  String time = paidOrder.timestamp
+                      .toDate()
+                      .toString()
+                      .split(' ')[1]
+                      .substring(0, 5);
 
                   return Container(
                     child: Card(
                       elevation: 2.0,
                       child: ExpansionTile(
                         title: Text('${paidOrder.id}'),
-                        subtitle: Text('${paidOrder.timestamp.toDate()}'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Date: $date', style: _style),
+                            Text('Time: $time', style: _style),
+                          ],
+                        ),
                         children: [
                           Container(
                             width: double.infinity,
@@ -276,14 +320,30 @@ class _SelectedOrderPageState extends State<SelectedOrderPage> {
                               mainAxisAlignment: MainAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                Text('Buyer Name: ${paidOrder.buyerFullName}'),
-                                Text('Buyer Number: ${paidOrder.phoneNumber}'),
-                                Text('id: ${paidOrder.id}'),
-                                Text('Buyer Email: ${paidOrder.email}'),
                                 Text(
-                                    'Buyer Address: ${paidOrder.addressDetails['address']}, ${paidOrder.addressDetails['areaName']}. Oncampus: ${paidOrder.addressDetails['onCampus']}'),
+                                  'Buyer Name: ${paidOrder.buyerFullName}',
+                                  style: subTitleStyle,
+                                ),
                                 Text(
-                                    'Number Of Orders: ${paidOrder.orders.length}'),
+                                  'Buyer Number: ${paidOrder.phoneNumber}',
+                                  style: subTitleStyle,
+                                ),
+                                Text(
+                                  'id: ${paidOrder.id}',
+                                  style: subTitleStyle,
+                                ),
+                                Text(
+                                  'Buyer Email: ${paidOrder.email}',
+                                  style: subTitleStyle,
+                                ),
+                                Text(
+                                  'Buyer Address: ${paidOrder.addressDetails['address']}, ${paidOrder.addressDetails['areaName']}. Oncampus: ${paidOrder.addressDetails['onCampus']}',
+                                  style: subTitleStyle,
+                                ),
+                                Text(
+                                  'Number Of Orders: ${paidOrder.orders.length}',
+                                  style: subTitleStyle,
+                                ),
                               ],
                             ),
                           ),
@@ -331,14 +391,16 @@ class _SelectedOrderPageState extends State<SelectedOrderPage> {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Food Name: ${currentOrder.mainItem}'),
-          Text('Fast Food: ${currentOrder.fastFoodName}'),
+          Text(
+            'Food Name: ${currentOrder.mainItem}',
+            style: _style,
+          ),
+          Text('Fast Food: ${currentOrder.fastFoodName}', style: _style),
+          Text('Number Of Plate: ${currentOrder.numberOfPlates}',
+              style: _style),
           currentOrder.extraItems.isEmpty
               ? Container()
               : Container(
-//                  decoration: BoxDecoration(
-//                    border: Border.all(color: Colors.black),
-//                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -354,7 +416,8 @@ class _SelectedOrderPageState extends State<SelectedOrderPage> {
                             return Container(
                               margin: EdgeInsets.all(2.0),
                               child: Text(
-                                  'Extra ${currentOrder.extraItems[index]}'),
+                                  'Extra ${currentOrder.extraItems[index]}',
+                                  style: _style),
                             );
                           },
                         ),
@@ -365,7 +428,7 @@ class _SelectedOrderPageState extends State<SelectedOrderPage> {
                 ),
 //          Text('Price: ${currentOrder.productPrice}'),
 //          Text('Category: ${currentOrder.productCategory}'),
-          Text('deliveryStatus: ${currentOrder.status}'),
+          Text('deliveryStatus: ${currentOrder.status}', style: _style),
         ],
       ),
     );

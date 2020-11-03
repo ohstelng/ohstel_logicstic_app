@@ -169,6 +169,13 @@ class _AllMarketOrderPageState extends State<AllMarketOrderPage> {
                 itemBuilder: (_, context, snap) {
                   PaidOrderModel paidOrder =
                       PaidOrderModel.fromMap(snap.data());
+                  String date =
+                  paidOrder.timestamp.toDate().toString().split(' ')[0];
+                  String time = paidOrder.timestamp
+                      .toDate()
+                      .toString()
+                      .split(' ')[1]
+                      .substring(0, 5);
 
                   return Container(
 //              margin: EdgeInsets.all(5.0),
@@ -176,7 +183,13 @@ class _AllMarketOrderPageState extends State<AllMarketOrderPage> {
                       elevation: 2.0,
                       child: ExpansionTile(
                         title: Text('${paidOrder.id}'),
-                        subtitle: Text('${paidOrder.timestamp.toDate()}'),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text('Date: $date'),
+                            Text('Time: $time'),
+                          ],
+                        ),
                         children: [
                           Container(
                             width: double.infinity,
